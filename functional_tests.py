@@ -1,7 +1,11 @@
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+import time
 import unittest
 
 class NewVisitorTest(unittest.TestCase):
+
 	def setUp(self):
 		self.browser = webdriver.Firefox()
 
@@ -14,15 +18,26 @@ class NewVisitorTest(unittest.TestCase):
 
 		# She notices the page title and header mention todo lists
 		self.assertIn('To-Do', self.browser.title)
-		self.fail('finish the test later')
+		header_text = self.browser.find_element_by_tag_name('h1').text
+		self.assertIn('To-do', header_text)
 
 		# She is invited to enter a todo item straight away
+		inputbox = self.browser.find_element_by_id('id_new_item')
+		self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-doitem')
 
 		# She types "Buy Peacock feathers" into a text box
+		inputbox.send_keys('Buy Peacock feathers')
 
 		# When she hits enter, the page updates, and now the page lists "Buy peacock feathers" as an item in a todo list
+		inputbox.send_keys(Keys.Enter)
+		time.sleep(1)
+
+		table = self.browser.find_element_by_id('id_list_table')
+		rows = table.find_elements_by_tag_name('tr')
+		self.assertTrue(any(row.text == '1: Buy peackcock feathers' for row in rows))
 
 		# There is still a text box inviting her to add another item.  She enters "Use Peacock feathers to make a fly"
+		self.fail('finish the test later')
 
 		# The page updates again, and now shows both items on her list
 
