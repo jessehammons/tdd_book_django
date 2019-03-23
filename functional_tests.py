@@ -19,22 +19,22 @@ class NewVisitorTest(unittest.TestCase):
 		# She notices the page title and header mention todo lists
 		self.assertIn('To-Do', self.browser.title)
 		header_text = self.browser.find_element_by_tag_name('h1').text
-		self.assertIn('To-do', header_text)
+		self.assertIn('To-Do', header_text)
 
 		# She is invited to enter a todo item straight away
 		inputbox = self.browser.find_element_by_id('id_new_item')
-		self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-doitem')
+		self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-do item')
 
 		# She types "Buy Peacock feathers" into a text box
 		inputbox.send_keys('Buy Peacock feathers')
 
 		# When she hits enter, the page updates, and now the page lists "Buy peacock feathers" as an item in a todo list
-		inputbox.send_keys(Keys.Enter)
+		inputbox.send_keys(Keys.ENTER)
 		time.sleep(1)
 
 		table = self.browser.find_element_by_id('id_list_table')
 		rows = table.find_elements_by_tag_name('tr')
-		self.assertTrue(any(row.text == '1: Buy peackcock feathers' for row in rows))
+		self.assertTrue(any(row.text == '1: Buy peackcock feathers' for row in rows), "New to-do item did not appear in table")
 
 		# There is still a text box inviting her to add another item.  She enters "Use Peacock feathers to make a fly"
 		self.fail('finish the test later')
