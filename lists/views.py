@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpRequest, HttpResponse
+from lists.models import Item
 
 # Create your views here.
 
@@ -9,6 +10,10 @@ def home_page(request:HttpRequest):
 	# if request.method == HTTP_METHOD_POST:
 	# 	return HttpResponse(request.POST['item_text'])
 	# return render(request, 'home.html')
-	return render(request, 'home.html', {
-		'new_item_text': request.POST.get('item_text', ''),
-	})
+
+	if request.method == HTTP_METHOD_POST:
+		Item.objects.create(text=request.POST['item_text'])
+		return redirect('/')
+
+	items = Item.objects.all()
+	return render(request, 'home.html', {'items': items})
