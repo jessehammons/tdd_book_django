@@ -4,6 +4,20 @@ from django.http import HttpRequest
 
 from lists.views import home_page
 
+class ListViewTest(TestCase):
+
+	def test_uses_list_template(self):
+		response = self.client.get('/lists/the-only-list-in-the-world/')
+		self.assertTemplateUsed(response, 'list.html')
+
+	def test_displays_all_items(self):
+		Item.objects.create(text='item one')
+		Item.objects.create(text='item two')
+
+		response = self.client.get('/lists/the-only-list-in-the-world/')
+
+		self.assertContains(response, 'item one')
+		self.assertContains(response, 'item two')
 
 class HomePageTest(TestCase):
 
@@ -41,16 +55,7 @@ class HomePageTest(TestCase):
 	def test_redirects_after_POST(self):
 		response = self.client.post('/', data={'item_text':'A new list item'})
 		self.assertEqual(response.status_code, 302)
-		self.assertEqual(response['location'], '/')
-
-	def test_display_all_list_items(self):
-		Item.objects.create(text='item_one')
-		Item.objects.create(text='item_two')
-
-		response = self.client.get('/')
-
-		self.assertIn('item_one', response.content.decode())
-		self.assertIn('item_two', response.content.decode())
+		self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
 
 
 from lists.models import Item
