@@ -3,10 +3,18 @@ from django.urls import resolve
 from django.http import HttpRequest
 
 from lists.views import home_page
+import lists.views
 
 from lists.models import Item, List
 
 class ListViewTest(TestCase):
+
+#	from django.urls import resolve
+
+	def test_resolves_to_list_view(self):
+		view, args, kwargs = resolve('/lists/321/')
+		self.assertEqual(view, lists.views.view_list)
+		self.assertEqual(321, int(args[0]))
 
 	def test_uses_list_template(self):
 		list = List.objects.create()
@@ -57,6 +65,10 @@ class NewListTest(TestCase):
 		self.assertRedirects(response, f'/lists/{new_list.id}/')
 
 class NewItemTest(TestCase):
+
+	def test_resolves_to_add_item_view(self):
+		view, args, kwargs = resolve('/lists/3/add_item')
+		self.assertEqual(view, lists.views.add_item)
 
 	def test_can_save_a_POST_request_to_an_existing_list(self):
 		other_list = List.objects.create()
