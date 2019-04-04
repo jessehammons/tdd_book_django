@@ -7,6 +7,8 @@ import lists.views
 
 from lists.models import Item, List
 
+import bs4
+
 class ListViewTest(TestCase):
 
 #	from django.urls import resolve
@@ -45,9 +47,35 @@ class ListViewTest(TestCase):
 
 class HomePageTest(TestCase):
 
+	def test_home_html(self):
+		response = self.client.get('/')
+		self.assertTrue(response.status_code, 200)
+		self.assertTrue(response['Content-Type'], 'text/html')
+		soup = bs4.BeautifulSoup(response.content, 'lxml')
+		html_tags = soup.findAll('html')
+		self.assertEqual(len(html_tags), 1, msg='expected one and only one <html> tag')
+		title_tags = html_tags[0].findAll('title')
+		self.assertEqual(len(title_tags), 1, msg='expected one and only one <title> tag')
+		title_tag = title_tags[0]
+		self.assertEqual(str(title_tag.string), 'To-Do lists')
+		body_tags = html_tags[0].findAll('body')
+		self.assertEqual(len(body_tags), 1, msg='expected one and only one <body> tag')
+		h1_tags = body_tags[0].findAll('h1')
+		self.assertEqual(len(h1_tags), 1, msg='expected one and only one <h1> tag')
+		h1_tag = h1_tags[0]
+		self.assertEqual(str(h1_tag.string), 'Start a new To-Do list')
+		form_tags = body_tags[0].findAll('form')
+		self.assertEqual(len(form_tags), 1, msg='expected one and only one <form> tag')
+		form_tag = form_tags[0]
+		form_tag_attrs = form_tag.attrs
+		self.assertEqual(form_tag_attrs['method'], 'POST', msg='expected form method POST')
+		expected_action_uri = '/lists/new'
+		self.assertEqual(form_tag_attrs['action'], expected_action_uri, msg='expected correct action uri')
+
 	def test_uses_home_template(self):
 		response = self.client.get('/')
 		self.assertTemplateUsed(response, 'home.html')
+
 
 
 class NewListTest(TestCase):
