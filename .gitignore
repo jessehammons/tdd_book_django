@@ -106,3 +106,6 @@ venv.bak/
 
 # Selenium
 geckodriver.log
+
+# Static files from python manage.py collectstatic
+/static
