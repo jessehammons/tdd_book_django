@@ -17,10 +17,17 @@ def home_page(request:HttpRequest):
 
 def view_list(request:HttpRequest, list_id):
 	list_ = List.objects.get(id=list_id)
+	error = None
 	if request.method == HTTP_METHOD_POST:
-		Item.objects.create(text=request.POST['item_text'], list=list_)
-		return redirect(list_.uri_list_id_uri())
-	return render(request, 'lists.html', {'list':list_, 'list_uri_action_add_item':list_.uri_action_add_item()})
+		try:
+			item = Item(text=request.POST['item_text'], list=list_)
+			item.full_clean()
+			item.save()
+			return redirect(list_.uri_list_id_uri())
+		except ValidationError:
+			error = "You can't have an empty list item"
+
+	return render(request, 'lists.html', {'list':list_, 'list_uri_action_add_item':list_.uri_action_add_item(), 'error': error})
 
 def new_list(request:HttpRequest):
 	list_ = List.objects.create()
