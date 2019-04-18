@@ -77,7 +77,7 @@ class ListViewTest(BasicTestCase):
 		### how to create URI for list/add_item?
 		### how to manage these and pass these into the templates, etc?
 		list_uri = f'/lists/{alist.id}/'
-		add_item_uri = f'{list_uri}add_item'
+		add_item_uri = list_uri
 		response = self.client.get(list_uri)
 		soup = self.validate_html_structure(response, expected_h1_text='Your To-Do list', expected_action_uri=add_item_uri)
 		table_tags = soup.findAll('table')
@@ -103,6 +103,42 @@ class ListViewTest(BasicTestCase):
 		correct_list = List.objects.create()
 		response = self.client.get(correct_list.uri_list_id_uri())
 		self.assertEqual(response.context['list'], correct_list)
+
+
+	def test_manual_uri_resolves_to_view_list(self):
+		view, args, kwargs = resolve('/lists/3/')
+		self.assertEqual(view, lists.views.view_list)
+
+	def test_add_item_uri_resolves_to_view_list(self):
+		other_list = List.objects.create()
+		correct_list = List.objects.create()
+
+		view, args, kwargs = resolve(correct_list.uri_action_add_item())
+		self.assertEqual(view, lists.views.view_list)
+		self.assertEqual(int(args[0]), correct_list.id)
+
+	def test_can_save_a_POST_request_to_an_existing_list(self):
+		other_list = List.objects.create()
+		correct_list = List.objects.create()
+
+		self.client.post(correct_list.uri_action_add_item(), data={'item_text':'A new item for an existing list'})
+
+		self.assertEqual(Item.objects.count(), 1)
+		new_item = Item.objects.first()
+		self.assertEqual(new_item.text, 'A new item for an existing list')
+		self.assertEqual(new_item.list, correct_list)
+
+	def test_POST_redirects_to_list_view(self):
+		other_list = List.objects.create()
+		correct_list = List.objects.create()
+
+		# removing /add_item uri and now using list_id_uri everywhere
+		self.assertEqual(correct_list.uri_action_add_item(), correct_list.uri_list_id_uri())
+
+		response = self.client.post(correct_list.uri_action_add_item(), data={'item_text': 'A new item for an existing list'})
+
+		self.assertRedirects(response, correct_list.uri_list_id_uri())
+
 
 
 class HomePageTest(BasicTestCase):
@@ -149,38 +185,5 @@ class NewListTest(TestCase):
 		self.client.post(List.URI_ACTION_NEW_LIST, data={'item_text':''})
 		self.assertEqual(List.objects.count(), 0)
 		self.assertEqual(Item.objects.count(), 0)
-
-class NewItemTest(TestCase):
-
-	def test_manual_uri_resolves_to_add_item_view(self):
-		view, args, kwargs = resolve('/lists/3/add_item')
-		self.assertEqual(view, lists.views.add_item)
-
-	def test_add_item_uri_resolves_to_add_item_view(self):
-		other_list = List.objects.create()
-		correct_list = List.objects.create()
-
-		view, args, kwargs = resolve(correct_list.uri_action_add_item())
-		self.assertEqual(view, lists.views.add_item)
-		self.assertEqual(int(args[0]), correct_list.id)
-
-	def test_can_save_a_POST_request_to_an_existing_list(self):
-		other_list = List.objects.create()
-		correct_list = List.objects.create()
-
-		self.client.post(correct_list.uri_action_add_item(), data={'item_text':'A new item for an existing list'})
-
-		self.assertEqual(Item.objects.count(), 1)
-		new_item = Item.objects.first()
-		self.assertEqual(new_item.text, 'A new item for an existing list')
-		self.assertEqual(new_item.list, correct_list)
-
-	def test_redirects_to_list_view(self):
-		other_list = List.objects.create()
-		correct_list = List.objects.create()
-
-		response = self.client.post(correct_list.uri_action_add_item(), data={'item_text': 'A new item for an existing list'})
-
-		self.assertRedirects(response, correct_list.uri_list_id_uri())
 
 

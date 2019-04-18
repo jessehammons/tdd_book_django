@@ -7,7 +7,7 @@ class List(models.Model):
 	URI_BASE = '/lists'
 
 	def uri_action_add_item(self):
-		return f'{self.URI_BASE}/{self.id}/add_item'
+		return f'{self.URI_BASE}/{self.id}/'
 
 	def uri_list_id_uri(self):
 		return f'{self.URI_BASE}/{self.id}/'
