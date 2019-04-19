@@ -13,7 +13,7 @@ def home_page(request:HttpRequest):
 	# 	return HttpResponse(request.POST['item_text'])
 	# return render(request, 'home.html')
 
-	return render(request, 'home.html', {'uri_action_new_list':List.URI_ACTION_NEW_LIST})
+	return render(request, 'home.html')
 
 def view_list(request:HttpRequest, list_id):
 	list_ = List.objects.get(id=list_id)
@@ -27,7 +27,7 @@ def view_list(request:HttpRequest, list_id):
 		except ValidationError:
 			error = "You can't have an empty list item"
 
-	return render(request, 'lists.html', {'list':list_, 'list_uri_action_add_item':list_.uri_action_add_item(), 'error': error})
+	return render(request, 'lists.html', {'list':list_, 'error': error})
 
 def new_list(request:HttpRequest):
 	list_ = List.objects.create()

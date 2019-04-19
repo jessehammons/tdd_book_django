@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from django.test import TestCase
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.http import HttpRequest
 from django.utils.html import escape
 
@@ -68,7 +68,8 @@ class ListViewTest(BasicTestCase):
 
 	def test_list_uri_action_new_list(self):
 		expected_action_uri = '/lists/new'
-		self.assertEqual(List.URI_ACTION_NEW_LIST, expected_action_uri)
+		action_uri = reverse('new_list')
+		self.assertEqual(action_uri, expected_action_uri)
 
 	def test_list_view_html(self):
 		response = self.client.get('/')
@@ -113,7 +114,7 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		view, args, kwargs = resolve(correct_list.uri_action_add_item())
+		view, args, kwargs = resolve(correct_list.uri_list_id_uri())
 		self.assertEqual(view, lists.views.view_list)
 		self.assertEqual(int(args[0]), correct_list.id)
 
@@ -121,7 +122,7 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		self.client.post(correct_list.uri_action_add_item(), data={'item_text':'A new item for an existing list'})
+		self.client.post(correct_list.uri_list_id_uri(), data={'item_text':'A new item for an existing list'})
 
 		self.assertEqual(Item.objects.count(), 1)
 		new_item = Item.objects.first()
@@ -132,16 +133,13 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		# removing /add_item uri and now using list_id_uri everywhere
-		self.assertEqual(correct_list.uri_action_add_item(), correct_list.uri_list_id_uri())
-
-		response = self.client.post(correct_list.uri_action_add_item(), data={'item_text': 'A new item for an existing list'})
+		response = self.client.post(correct_list.uri_list_id_uri(), data={'item_text': 'A new item for an existing list'})
 
 		self.assertRedirects(response, correct_list.uri_list_id_uri())
 
 	def test_validation_errors_end_up_on_lists_page(self):
 		list_ = List.objects.create()
-		response = self.client.post(list_.uri_action_add_item(), data={'item_text':''})
+		response = self.client.post(list_.uri_list_id_uri(), data={'item_text':''})
 		self.assertEqual(response.status_code, 200)
 		self.assertTemplateUsed(response, 'lists.html')
 		expected_error = escape("You can't have an empty list item")
@@ -169,14 +167,18 @@ class HomePageTest(BasicTestCase):
 class NewListTest(TestCase):
 	def test_can_save_a_POST_request(self):
 		item_text_value = 'A new list item'
-		response = self.client.post(List.URI_ACTION_NEW_LIST, data={'item_text':item_text_value})
+		action_uri = reverse('new_list')
+		self.assertEqual(action_uri, '/lists/new')
+		response = self.client.post(action_uri, data={'item_text':item_text_value})
 
 		self.assertEqual(Item.objects.count(), 1)
 		new_item = Item.objects.first()
 		self.assertEqual(new_item.text, item_text_value)
 
 	def test_redirects_after_POST(self):
-		response = self.client.post(List.URI_ACTION_NEW_LIST, data={'item_text':'A new list item'})
+		action_uri = reverse('new_list')
+		self.assertEqual(action_uri, '/lists/new')
+		response = self.client.post(action_uri, data={'item_text':'A new list item'})
 		new_list = List.objects.first()
 		self.assertRedirects(response, new_list.uri_list_id_uri())
 
@@ -188,7 +190,9 @@ class NewListTest(TestCase):
 		self.assertContains(response, expected_error)
 
 	def test_invalid_list_items_are_not_saved(self):
-		self.client.post(List.URI_ACTION_NEW_LIST, data={'item_text':''})
+		action_uri = reverse('new_list')
+		self.assertEqual(action_uri, '/lists/new')
+		self.client.post(action_uri, data={'item_text':''})
 		self.assertEqual(List.objects.count(), 0)
 		self.assertEqual(Item.objects.count(), 0)
 

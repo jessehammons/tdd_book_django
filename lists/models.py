@@ -1,16 +1,12 @@
 from django.db import models
+from django.urls import reverse
 
 # Create your models here.
 
 class List(models.Model):
-	URI_ACTION_NEW_LIST = '/lists/new'
-	URI_BASE = '/lists'
-
-	def uri_action_add_item(self):
-		return self.uri_list_id_uri()
 
 	def uri_list_id_uri(self):
-		return f'{self.URI_BASE}/{self.id}/'
+		return reverse('view_list', args=(self.id,))
 
 
 class Item(models.Model):
