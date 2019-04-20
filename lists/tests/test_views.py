@@ -48,7 +48,7 @@ class ListViewTest(BasicTestCase):
 	def test_manual_correct_list_id_uri(self):
 		alist = List.objects.create()
 		correct_list_uri = f'/lists/{alist.id}/'
-		self.assertEqual(correct_list_uri, alist.uri_list_id_uri())
+		self.assertEqual(correct_list_uri, alist.get_absolute_url())
 
 	def test_manual_uri_resolves_to_list_view(self):
 		view, args, kwargs = resolve('/lists/321/')
@@ -57,13 +57,13 @@ class ListViewTest(BasicTestCase):
 
 	def test_list_id_uri_resolves_to_list_view(self):
 		alist = List.objects.create()
-		view, args, kwargs = resolve(alist.uri_list_id_uri())
+		view, args, kwargs = resolve(alist.get_absolute_url())
 		self.assertEqual(view, lists.views.view_list)
 		self.assertEqual(int(args[0]), alist.id)
 
 	def test_uses_list_template(self):
 		alist = List.objects.create()
-		response = self.client.get(alist.uri_list_id_uri())
+		response = self.client.get(alist.get_absolute_url())
 		self.assertTemplateUsed(response, 'lists.html')
 
 	def test_list_uri_action_new_list(self):
@@ -92,7 +92,7 @@ class ListViewTest(BasicTestCase):
 		Item.objects.create(text='other list item one', list=other_list)
 		Item.objects.create(text='other list item two', list=other_list)
 
-		response = self.client.get(correct_list.uri_list_id_uri())
+		response = self.client.get(correct_list.get_absolute_url())
 
 		self.assertContains(response, 'item one')
 		self.assertContains(response, 'item two')
@@ -102,7 +102,7 @@ class ListViewTest(BasicTestCase):
 	def test_passes_correct_list_to_template(self):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
-		response = self.client.get(correct_list.uri_list_id_uri())
+		response = self.client.get(correct_list.get_absolute_url())
 		self.assertEqual(response.context['list'], correct_list)
 
 
@@ -114,7 +114,7 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		view, args, kwargs = resolve(correct_list.uri_list_id_uri())
+		view, args, kwargs = resolve(correct_list.get_absolute_url())
 		self.assertEqual(view, lists.views.view_list)
 		self.assertEqual(int(args[0]), correct_list.id)
 
@@ -122,7 +122,7 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		self.client.post(correct_list.uri_list_id_uri(), data={'item_text':'A new item for an existing list'})
+		self.client.post(correct_list.get_absolute_url(), data={'item_text':'A new item for an existing list'})
 
 		self.assertEqual(Item.objects.count(), 1)
 		new_item = Item.objects.first()
@@ -133,13 +133,13 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		response = self.client.post(correct_list.uri_list_id_uri(), data={'item_text': 'A new item for an existing list'})
+		response = self.client.post(correct_list.get_absolute_url(), data={'item_text': 'A new item for an existing list'})
 
-		self.assertRedirects(response, correct_list.uri_list_id_uri())
+		self.assertRedirects(response, correct_list.get_absolute_url())
 
 	def test_validation_errors_end_up_on_lists_page(self):
 		list_ = List.objects.create()
-		response = self.client.post(list_.uri_list_id_uri(), data={'item_text':''})
+		response = self.client.post(list_.get_absolute_url(), data={'item_text':''})
 		self.assertEqual(response.status_code, 200)
 		self.assertTemplateUsed(response, 'lists.html')
 		expected_error = escape("You can't have an empty list item")
@@ -180,7 +180,7 @@ class NewListTest(TestCase):
 		self.assertEqual(action_uri, '/lists/new')
 		response = self.client.post(action_uri, data={'item_text':'A new list item'})
 		new_list = List.objects.first()
-		self.assertRedirects(response, new_list.uri_list_id_uri())
+		self.assertRedirects(response, new_list.get_absolute_url())
 
 	def test_validation_errors_are_sent_backt_home_page_template(self):
 		response = self.client.post('/lists/new', data={'item_text':''})

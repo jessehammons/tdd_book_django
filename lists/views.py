@@ -23,7 +23,7 @@ def view_list(request:HttpRequest, list_id):
 			item = Item(text=request.POST['item_text'], list=list_)
 			item.full_clean()
 			item.save()
-			return redirect(list_.uri_list_id_uri())
+			return redirect(list_)
 		except ValidationError:
 			error = "You can't have an empty list item"
 
@@ -39,5 +39,5 @@ def new_list(request:HttpRequest):
 		list_.delete()
 		error = "You can't have an empty list item"
 		return render(request, 'home.html', {"error": error})
-	return redirect(list_.uri_list_id_uri())
+	return redirect(list_) # uses list_.get_absolute_url() under the hood
 
