@@ -123,7 +123,7 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		self.client.post(correct_list.get_absolute_url(), data={'item_text':'A new item for an existing list'})
+		self.client.post(correct_list.get_absolute_url(), data={'text':'A new item for an existing list'})
 
 		self.assertEqual(Item.objects.count(), 1)
 		new_item = Item.objects.first()
@@ -134,13 +134,13 @@ class ListViewTest(BasicTestCase):
 		other_list = List.objects.create()
 		correct_list = List.objects.create()
 
-		response = self.client.post(correct_list.get_absolute_url(), data={'item_text': 'A new item for an existing list'})
+		response = self.client.post(correct_list.get_absolute_url(), data={'text': 'A new item for an existing list'})
 
 		self.assertRedirects(response, correct_list.get_absolute_url())
 
 	def test_validation_errors_end_up_on_lists_page(self):
 		list_ = List.objects.create()
-		response = self.client.post(list_.get_absolute_url(), data={'item_text':''})
+		response = self.client.post(list_.get_absolute_url(), data={'text':''})
 		self.assertEqual(response.status_code, 200)
 		self.assertTemplateUsed(response, 'lists.html')
 		expected_error = escape("You can't have an empty list item")
@@ -172,7 +172,7 @@ class NewListTest(TestCase):
 		item_text_value = 'A new list item'
 		action_uri = reverse('new_list')
 		self.assertEqual(action_uri, '/lists/new')
-		response = self.client.post(action_uri, data={'item_text':item_text_value})
+		response = self.client.post(action_uri, data={'text':item_text_value})
 
 		self.assertEqual(Item.objects.count(), 1)
 		new_item = Item.objects.first()
@@ -181,12 +181,12 @@ class NewListTest(TestCase):
 	def test_redirects_after_POST(self):
 		action_uri = reverse('new_list')
 		self.assertEqual(action_uri, '/lists/new')
-		response = self.client.post(action_uri, data={'item_text':'A new list item'})
+		response = self.client.post(action_uri, data={'text':'A new list item'})
 		new_list = List.objects.first()
 		self.assertRedirects(response, new_list.get_absolute_url())
 
 	def test_validation_errors_are_sent_backt_home_page_template(self):
-		response = self.client.post('/lists/new', data={'item_text':''})
+		response = self.client.post('/lists/new', data={'text':''})
 		self.assertEqual(response.status_code, 200)
 		self.assertTemplateUsed(response, 'home.html')
 		expected_error = escape("You can't have an empty list item")
@@ -195,7 +195,7 @@ class NewListTest(TestCase):
 	def test_invalid_list_items_are_not_saved(self):
 		action_uri = reverse('new_list')
 		self.assertEqual(action_uri, '/lists/new')
-		self.client.post(action_uri, data={'item_text':''})
+		self.client.post(action_uri, data={'text':''})
 		self.assertEqual(List.objects.count(), 0)
 		self.assertEqual(Item.objects.count(), 0)
 

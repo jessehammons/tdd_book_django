@@ -11,7 +11,7 @@ HTTP_METHOD_POST = 'POST'
 
 def home_page(request:HttpRequest):
 	# if request.method == HTTP_METHOD_POST:
-	# 	return HttpResponse(request.POST['item_text'])
+	# 	return HttpResponse(request.POST['text'])
 	# return render(request, 'home.html')
 
 	return render(request, 'home.html', {'form': ItemForm()})
@@ -21,7 +21,7 @@ def view_list(request:HttpRequest, list_id):
 	error = None
 	if request.method == HTTP_METHOD_POST:
 		try:
-			item = Item(text=request.POST['item_text'], list=list_)
+			item = Item(text=request.POST['text'], list=list_)
 			item.full_clean()
 			item.save()
 			return redirect(list_)
@@ -32,7 +32,7 @@ def view_list(request:HttpRequest, list_id):
 
 def new_list(request:HttpRequest):
 	list_ = List.objects.create()
-	item = Item.objects.create(text=request.POST['item_text'], list=list_)
+	item = Item.objects.create(text=request.POST['text'], list=list_)
 	try:
 		item.full_clean()
 		item.save()
