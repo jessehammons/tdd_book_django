@@ -22,7 +22,7 @@ def view_list(request:HttpRequest, list_id):
 	if request.method == HTTP_METHOD_POST:
 		form = ItemForm(data=request.POST)
 		if form.is_valid():
-			Item.objects.create(text=request.POST['text'], list=list_)
+			form.save(for_list=list_)
 			return redirect(list_)
 	return render(request, 'lists.html', {'list':list_, 'form': form })
 
@@ -30,7 +30,7 @@ def new_list(request:HttpRequest):
 	form = ItemForm(data=request.POST)
 	if form.is_valid():
 		list_ = List.objects.create()
-		item = Item.objects.create(text=request.POST['text'], list=list_)
+		form.save(for_list=list_)
 		return redirect(list_)  # uses list_.get_absolute_url() under the hood
 	else:
 		return render(request, 'home.html', {'form': form})
