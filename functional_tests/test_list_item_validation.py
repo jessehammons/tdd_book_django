@@ -51,7 +51,7 @@ class ItemValidationTest(FunctionalTest):
 		# She sees a helful error message
 		self.wait_for(lambda: self.assertEqual(
 			self.browser.find_element_by_css_selector('.has-error').text,
-			"You've alread this item in your list"
+			"You've already got this in your list"
 		))
 
 # no __main__, use python3 manage.py test functional_tests
