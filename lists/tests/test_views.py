@@ -40,8 +40,8 @@ class BasicTestCase(TestCase):
 		h1_tag = h1_tags[0]
 		self.assertEqual(str(h1_tag.string), expected_h1_text, msg='incorrect text for h1 tag')
 		form_tags = body_tags[0].findAll('form')
-		self.assertEqual(len(form_tags), 1, msg='expected one and only one <form> tag')
-		form_tag = form_tags[0]
+		self.assertEqual(len(form_tags), 2, msg='expected two <form> tags')
+		form_tag = form_tags[1]
 		form_tag_attrs = form_tag.attrs
 		self.assertEqual(form_tag_attrs['method'], 'POST', msg='expected form method POST')
 		self.assertEqual(form_tag_attrs['action'], expected_action_uri, msg='expected correct action uri')
